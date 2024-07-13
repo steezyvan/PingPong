@@ -32,8 +32,9 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void newBall() {
-        //random = new Random();
-        ball = new Ball((GAME_WIDTH / 2) - (BALL_DIAMETER / 2), (GAME_HEIGHT / 2) - (BALL_DIAMETER / 2), BALL_DIAMETER, BALL_DIAMETER);
+        random = new Random();
+        ball = new Ball((GAME_WIDTH / 2) - (BALL_DIAMETER / 2), (GAME_HEIGHT / 2) - (BALL_DIAMETER / 2), random.nextInt(GAME_HEIGHT - BALL_DIAMETER) ,BALL_DIAMETER, BALL_DIAMETER);
+
     }
 
     public void newPaddles() {
@@ -52,6 +53,7 @@ public class GamePanel extends JPanel implements Runnable {
         paddle1.draw(g);
         paddle2.draw(g);
         ball.draw(g);
+        score.draw(g);
     }
 
     public void move() {
@@ -68,6 +70,28 @@ public class GamePanel extends JPanel implements Runnable {
         if(ball.y >= GAME_HEIGHT - BALL_DIAMETER)
             ball.setYDirection(-ball.yVelocity);
 
+        //bounces ball of paddles
+        if(ball.intersects(paddle1)) {
+            ball.xVelocity= Math.abs(ball.xVelocity);
+            ball.xVelocity++; //optional for more difficulty
+            if(ball.yVelocity > 0)
+                ball.yVelocity++;
+            else
+                ball.yVelocity--;
+            ball.setXDirection(ball.xVelocity);
+            ball.setYDirection(ball.yVelocity);
+        }
+
+        if(ball.intersects(paddle2)) {
+            ball.xVelocity= Math.abs(ball.xVelocity);
+            ball.xVelocity++; //optional for more difficulty
+            if(ball.yVelocity > 0)
+                ball.yVelocity++;
+            else
+                ball.yVelocity--;
+            ball.setXDirection(-ball.xVelocity);
+            ball.setYDirection(ball.yVelocity);
+        }
         //stops paddle at window edges
         if (paddle1.y <= 0) {
             paddle1.y = 0;
@@ -77,10 +101,22 @@ public class GamePanel extends JPanel implements Runnable {
                 paddle2.y = 0;
        if (paddle2.y >= (GAME_HEIGHT - PADDLE_HEIGHT))
                     paddle2.y = GAME_HEIGHT - PADDLE_HEIGHT;
-            }
+            //Give a player 1 point and creates new paddles & ball
+           if(ball.x <= 0){
+               score.player2++;
+               newPaddles();
+               newBall();
+               System.out.println("Player 2: " + score.player2);
+           }
+           if(ball.x => GAME_WIDTH - BALL_DIAMETER){
+               score.player1++;
+               newPaddles();
+               newBall();
+               System.out.println("Player 1: " + score.player1);
+           }
         }
 
-        public void run () {
+        public void run() {
             //game loop
             long lastTime = System.nanoTime();
             double amountOfTicks = 60.0;
