@@ -29,12 +29,12 @@ public class GamePanel extends JPanel implements Runnable {
         this.setPreferredSize(SCREEN_SIZE);
 
         gameThread = new Thread(this);
+        gameThread.start();
     }
 
     public void newBall() {
         random = new Random();
-        ball = new Ball((GAME_WIDTH / 2) - (BALL_DIAMETER / 2), (GAME_HEIGHT / 2) - (BALL_DIAMETER / 2), random.nextInt(GAME_HEIGHT - BALL_DIAMETER) ,BALL_DIAMETER, BALL_DIAMETER);
-
+        ball = new Ball((GAME_WIDTH / 2) - (BALL_DIAMETER / 2), (GAME_HEIGHT / 2) - (BALL_DIAMETER / 2), BALL_DIAMETER, BALL_DIAMETER);
     }
 
     public void newPaddles() {
@@ -67,8 +67,9 @@ public class GamePanel extends JPanel implements Runnable {
         if(ball.y <= 0){
             ball.setYDirection(-ball.yVelocity);
         }
-        if(ball.y >= GAME_HEIGHT - BALL_DIAMETER)
+        if(ball.y >= GAME_HEIGHT - BALL_DIAMETER) {
             ball.setYDirection(-ball.yVelocity);
+        }
 
         //bounces ball of paddles
         if(ball.intersects(paddle1)) {
@@ -92,61 +93,65 @@ public class GamePanel extends JPanel implements Runnable {
             ball.setXDirection(-ball.xVelocity);
             ball.setYDirection(ball.yVelocity);
         }
+        
         //stops paddle at window edges
         if (paddle1.y <= 0) {
             paddle1.y = 0;
-       if (paddle1.y >= (GAME_HEIGHT - PADDLE_HEIGHT))
-                paddle1.y = GAME_HEIGHT - PADDLE_HEIGHT;
-       if (paddle2.y <= 0) {
-                paddle2.y = 0;
-       if (paddle2.y >= (GAME_HEIGHT - PADDLE_HEIGHT))
-                    paddle2.y = GAME_HEIGHT - PADDLE_HEIGHT;
-            //Give a player 1 point and creates new paddles & ball
-           if(ball.x <= 0){
-               score.player2++;
-               newPaddles();
-               newBall();
-               System.out.println("Player 2: " + score.player2);
-           }
-           if(ball.x => GAME_WIDTH - BALL_DIAMETER){
-               score.player1++;
-               newPaddles();
-               newBall();
-               System.out.println("Player 1: " + score.player1);
-           }
+        }
+        if (paddle1.y >= (GAME_HEIGHT - PADDLE_HEIGHT)) {
+            paddle1.y = GAME_HEIGHT - PADDLE_HEIGHT;
+        }
+        if (paddle2.y <= 0) {
+            paddle2.y = 0;
+        }
+        if (paddle2.y >= (GAME_HEIGHT - PADDLE_HEIGHT)) {
+            paddle2.y = GAME_HEIGHT - PADDLE_HEIGHT;
+        }
+        
+        //Give a player 1 point and creates new paddles & ball
+        if(ball.x <= 0){
+            score.player2++;
+            newPaddles();
+            newBall();
+            System.out.println("Player 2: " + score.player2);
+        }
+        if(ball.x >= GAME_WIDTH - BALL_DIAMETER){
+            score.player1++;
+            newPaddles();
+            newBall();
+            System.out.println("Player 1: " + score.player1);
+        }
+    }
+
+    public void run() {
+        //game loop
+        long lastTime = System.nanoTime();
+        double amountOfTicks = 60.0;
+        double ns = 1000000000 / amountOfTicks;
+        double delta = 0;
+        while (true) {
+            long now = System.nanoTime();
+            delta += (now - lastTime) / ns;
+            lastTime = now;
+            if (delta >= 1) {
+                move();
+                checkCollision();
+                repaint();
+                delta--;
+                System.out.println("Test");
+            }
+        }
+    }
+
+    public class AL extends KeyAdapter {
+        public void keyPressed(KeyEvent e) {
+            paddle1.keyPressed(e);
+            paddle2.keyPressed(e);
         }
 
-        public void run() {
-            //game loop
-            long lastTime = System.nanoTime();
-            double amountOfTicks = 60.0;
-            double ns = 1000000000 / amountOfTicks;
-            double delta = 0;
-            while (true) {
-                long now = System.nanoTime();
-                delta += (now - lastTime) / ns;
-                lastTime = now;
-                if (delta >= 1) {
-                    move();
-                    checkCollision();
-                    ;
-                    repaint();
-                    delta--;
-                    System.out.println("Test");
-                }
-            }
-        }
-
-        public class AL extends KeyAdapter {
-            public void KeyPressed(KeyEvent e) {
-                paddle1.keyPressed(e);
-                paddle2.keyPressed(e);
-            }
-
-            public void KeyReleased(KeyEvent e) {
-                paddle1.keyReleased(e);
-                paddle2.keyReleased(e);
-            }
+        public void keyReleased(KeyEvent e) {
+            paddle1.keyReleased(e);
+            paddle2.keyReleased(e);
         }
     }
 }
